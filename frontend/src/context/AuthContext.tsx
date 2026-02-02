@@ -1,4 +1,5 @@
 import React, { createContext, useState, useCallback } from 'react';
+import apiClient from '../services/api';
 
 export interface AuthContextType {
   user: User | null;
@@ -28,10 +29,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Implement login API call
-      console.log('Login:', email, password);
+      const response = await apiClient.post('/auth/login', { email, password });
+      const { user: userData, accessToken, refreshToken } = response.data;
+
+      setUser(userData);
+      setToken(accessToken);
+      localStorage.setItem('token', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      const message = err instanceof Error ? err.message : 'Login failed';
+      setError(message);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -41,10 +49,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Implement signup API call
-      console.log('Signup:', email, name, password);
+      const response = await apiClient.post('/auth/signup', { email, name, password });
+      const { user: userData, accessToken, refreshToken } = response.data;
+
+      setUser(userData);
+      setToken(accessToken);
+      localStorage.setItem('token', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      const message = err instanceof Error ? err.message : 'Signup failed';
+      setError(message);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -54,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
   }, []);
 
   return (

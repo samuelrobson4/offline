@@ -1,25 +1,19 @@
 import express from 'express';
+import { authController } from '../controllers/authController';
+import { protect } from '../middlewares/auth';
 
 const router = express.Router();
 
 // POST /api/auth/signup
-router.post('/signup', (_req, res) => {
-  res.json({ message: 'Signup endpoint - TODO' });
-});
+router.post('/signup', authController.signup);
 
 // POST /api/auth/login
-router.post('/login', (_req, res) => {
-  res.json({ message: 'Login endpoint - TODO' });
-});
+router.post('/login', authController.login);
 
 // POST /api/auth/refresh
-router.post('/refresh', (_req, res) => {
-  res.json({ message: 'Refresh endpoint - TODO' });
-});
+router.post('/refresh', authController.refresh);
 
 // POST /api/auth/logout
-router.post('/logout', (_req, res) => {
-  res.json({ message: 'Logout endpoint - TODO' });
-});
+router.post('/logout', protect, authController.logout);
 
 export default router;
