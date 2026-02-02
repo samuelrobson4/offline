@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  password             String
+  name                 String?
+
+  // Gmail integration
+  gmailAccessToken     String?
+  gmailRefreshToken    String?
+  gmailSyncedAt        DateTime?
+
+  // V2: EventSync email
+  eventSyncEmail       String?  @unique
+  eventSyncEmailId     String?  // ID from email service (Mailgun, etc)
+
+  places               Place[]
+  events               Event[]
+  emailSources         EmailSource[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Place {
+  id                   String   @id @default(cuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                 String
+  address              String?
+  coordinates          Coordinates?
+  website              String?
+  category             String   @default("other") // bar, restaurant, venue, other
+
+  isFollowing          Boolean  @default(true)
+  imageUrl             String?
+  favicon              String?
+
+  events               Event[]
+  emailSources         EmailSource[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([userId, website])
+  @@index([userId])
+  @@index([category])
+}
+
+type Coordinates {
+  lat Float
+  lng Float
+}
+
+model Event {
+  id                   String   @id @default(cuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  placeId              String
+  place                Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  title                String
+  description          String?
+  startTime            DateTime
+  endTime              DateTime?
+  date                 DateTime
+
+  location             String?
+  category             String   @default("other") // music, food, special, other
+
+  imageUrl             String?
+  sourceEmail          String?  // Original email address it came from
+  sourceType           String   @default("gmail") // gmail, eventsync, manual
+  emailId              String?  // ID from email service
+
+  externalUrl          String?
+  externalId           String?  @unique // To prevent duplicates
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([externalId])
+  @@index([userId])
+  @@index([placeId])
+  @@index([date])
+  @@index([sourceEmail])
+}
+
+model EmailSource {
+  id                   String   @id @default(cuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fromEmail            String
+  fromName             String?
+
+  placeId              String?
+  place                Place?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  sourceType           String   @default("gmail") // gmail, eventsync
+  lastEmailReceivedAt  DateTime?
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([userId, fromEmail])
+  @@index([userId])
+  @@index([placeId])
+}
