@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Calendar from '../components/Calendar';
+import Map from '../components/Map';
+import PlacesManager from '../components/PlacesManager';
 
 export default function Dashboard(): JSX.Element {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'calendar' | 'map' | 'places'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'map' | 'places'>('places');
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const handleLogout = () => {
     logout();
@@ -47,34 +51,45 @@ export default function Dashboard(): JSX.Element {
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
-              {tab === 'calendar' && 'Calendar'}
-              {tab === 'map' && 'Map'}
-              {tab === 'places' && 'Places'}
+              {tab === 'calendar' && '📅 Calendar'}
+              {tab === 'map' && '🗺️ Map'}
+              {tab === 'places' && '📍 Places'}
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-lg p-8 border border-gray-200">
+        <div>
           {activeTab === 'calendar' && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <p className="text-gray-600 mb-2">📅 Calendar View</p>
-              <p className="text-gray-500 text-sm">Coming soon...</p>
+            <div className="bg-white rounded-lg p-8 border border-gray-200">
+              <Calendar onSelectEvent={setSelectedEventId} />
             </div>
           )}
           {activeTab === 'map' && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <p className="text-gray-600 mb-2">🗺️ Map View</p>
-              <p className="text-gray-500 text-sm">Coming soon...</p>
+            <div className="bg-white rounded-lg p-8 border border-gray-200">
+              <Map onSelectEvent={setSelectedEventId} />
             </div>
           )}
           {activeTab === 'places' && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <p className="text-gray-600 mb-2">📍 Places Manager</p>
-              <p className="text-gray-500 text-sm">Coming soon...</p>
+            <div className="bg-white rounded-lg p-8 border border-gray-200">
+              <PlacesManager />
             </div>
           )}
         </div>
+
+        {selectedEventId && (
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-700">
+              Selected event ID: {selectedEventId}{' '}
+              <button
+                onClick={() => setSelectedEventId(null)}
+                className="ml-2 text-blue-600 hover:underline"
+              >
+                Clear
+              </button>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
