@@ -1,4 +1,4 @@
-import { google, gmail_v1 } from 'googleapis';
+import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
@@ -25,24 +25,33 @@ export const getGmailClient = (): OAuth2Client => {
 export interface GmailMessage {
   id: string;
   threadId: string;
-  labelIds: string[];
+  labelIds?: string[];
   snippet: string;
   internalDate: string;
-  headers: {
-    name: string;
-    value: string;
-  }[];
-  parts?: Array<{
-    mimeType: string;
-    body: {
+  payload?: {
+    headers?: Array<{
+      name: string;
+      value: string;
+    }>;
+    mimeType?: string;
+    parts?: Array<{
+      mimeType?: string;
+      body?: {
+        size: number;
+        data?: string;
+      };
+      parts?: Array<{
+        mimeType?: string;
+        body?: {
+          size: number;
+          data?: string;
+        };
+      }>;
+    }>;
+    body?: {
       size: number;
       data?: string;
     };
-    parts?: any[];
-  }>;
-  body?: {
-    size: number;
-    data?: string;
   };
 }
 
@@ -146,8 +155,8 @@ export const gmailService = {
       });
 
       return {
-        messages: response.data.messages || [],
-        nextPageToken: response.data.nextPageToken,
+        messages: (response.data.messages as GmailMessage[]) || [],
+        nextPageToken: response.data.nextPageToken || undefined,
       };
     } catch (error) {
       logger.error('Failed to fetch emails:', error);
@@ -187,7 +196,7 @@ export const gmailService = {
     const headers = message.payload?.headers || [];
 
     const getHeader = (name: string): string => {
-      return headers.find((h) => h.name === name)?.value || '';
+      return headers.find((h: { name: string; value: string }) => h.name === name)?.value || '';
     };
 
     // Extract name from email address

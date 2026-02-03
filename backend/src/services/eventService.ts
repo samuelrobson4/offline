@@ -200,7 +200,7 @@ export const eventService = {
     return {
       totalEvents,
       upcomingEvents,
-      byCategory: byCategory.map((cat) => ({
+      byCategory: byCategory.map((cat: any) => ({
         category: cat.category,
         count: cat._count,
       })),

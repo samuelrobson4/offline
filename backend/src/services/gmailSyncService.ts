@@ -59,7 +59,7 @@ export const gmailSyncService = {
       }
 
       // Fetch emails
-      let allMessages = [];
+      let allMessages: any[] = [];
       let pageToken: string | undefined;
       let pageCount = 0;
       const maxPages = 5; // Limit to 5 pages per sync
